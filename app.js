@@ -1,68 +1,55 @@
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
-const bodyParser = require("body-parser");
+const express = require('express'),
+    app = express(),
+    PORT = process.env.PORT || 3000,
+    bodyParser = require("body-parser"),
+    mongoose = require("mongoose");
+
+mongoose.connect("mongodb://localhost:27017/yelp_camp", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
 
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.set("view engine", "ejs");
 
-let campgrounds = [{
-        name: "Wolf Ridge",
-        image: "https://media2.fdncms.com/chronogram/imager/u/original/8615100/camping.jpg"
-    },
-    {
-        name: "Wolf Ridge",
-        image: "https://media2.fdncms.com/chronogram/imager/u/original/8615100/camping.jpg"
-    },
-    {
-        name: "Wolf Ridge",
-        image: "https://media2.fdncms.com/chronogram/imager/u/original/8615100/camping.jpg"
-    },
-    {
-        name: "Wolf Ridge",
-        image: "https://media2.fdncms.com/chronogram/imager/u/original/8615100/camping.jpg"
-    },
-    {
-        name: "Wolf Ridge",
-        image: "https://media2.fdncms.com/chronogram/imager/u/original/8615100/camping.jpg"
-    },
-    {
-        name: "Wolf Ridge",
-        image: "https://media2.fdncms.com/chronogram/imager/u/original/8615100/camping.jpg"
-    },
-    {
-        name: "Wolf Ridge",
-        image: "https://media2.fdncms.com/chronogram/imager/u/original/8615100/camping.jpg"
-    },
-    {
-        name: "Wolf Ridge",
-        image: "https://media2.fdncms.com/chronogram/imager/u/original/8615100/camping.jpg"
-    },
-    {
-        name: "Wolf Ridge",
-        image: "https://media2.fdncms.com/chronogram/imager/u/original/8615100/camping.jpg"
-    },
-    {
-        name: "Pike Bend",
-        image: "https://mitpress.mit.edu/sites/default/files/styles/full_text_column/public/2018-02/Environment_2.jpg?itok=l8Ta1sPu"
-    },
-    {
-        name: "Goats Bed",
-        image: "https://imagesvc.meredithcorp.io/v3/mm/image?url=https%3A%2F%2Fcdn-image.travelandleisure.com%2Fsites%2Fdefault%2Ffiles%2Fstyles%2F1600x1000%2Fpublic%2F1443561122%2FCAMPING0915-Glacier-National-Park.jpg%3Fitok%3D6gQxpDuT&q=85"
-    },
-];
+// Schema Setup
+const campgroundSchema = new mongoose.Schema({
+    name: String,
+    image: String
+});
+
+// Making model adds methods to schema
+const Campground = mongoose.model("Campground", campgroundSchema);
+
+Campground.create({
+ name: "Pikes Place",
+ image: "https://www.reserveamerica.com/webphotos/racms/articles/images/14b26607-aa0e-4bc9-8ab8-9e6cf80b3e26_image2_1-oregon.jpg"
+
+}, (err, campground) => {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log("Newly Created Campground", );
+        console.log(campground);
+    }
+});
+
 app.get("/", (req, res) => {
     res.render("landing")
 });
 
 app.get("/campgrounds", (req, res) => {
-
-
-    res.render("campgrounds", {
-        campgrounds: campgrounds
-    }) // the key is the variable name, the value is the actual "campgrounds" variable we're passing in 
+    Campground.find({}, (err, allCampgrounds) => {
+        if(err) {
+            console.log(err);
+            
+        } else {
+            res.render("campgrounds", {campgrounds: allCampgrounds}) // the key is the variable name, the value is the actual "campgrounds" variable we're passing in 
+        }
+    })
+    
 })
 
 app.get("/campgrounds/new", (req, res) => {
