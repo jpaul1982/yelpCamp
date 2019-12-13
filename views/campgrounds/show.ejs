@@ -9,21 +9,24 @@
                 <li class="list-group-item">Info 3</li>
 
             </div>
+            <div id="map"></div>
         </div>
         <div class="col-md-9">
             <div class="thumbnail">
                 <img class="img-resposive" width="450 px" src="<%= campground.image %> ">
                 <div class="caption-full">
-                    <h4 class="pull-right">$9.00/night</h4>
+                    <h4 class="pull-right">$<%=campground.price%>/night</h4>
                     <h4><a><%= campground.name %></a></h4>
                     <p><%=campground.description%></p>
                     <p>
                         <em>Submitted by <%=campground.author.username%></em>
                     </p>
+                    <% if(currentUser && campground.author.id.equals(currentUser._id))  {%>
                     <a class="btn btn-warning" href="/campgrounds/<%=campground._id%>/edit">Edit</a>
                     <form id="delete-form" action="/campgrounds/<%=campground._id%>?_method=DELETE" method="POST">
                         <button class="btn btn-danger">Delete</button>
                     </form>
+                    <% } %>
                 </div>
             </div>
             <div class="well">
@@ -38,6 +41,14 @@
                         <strong><%= comment.author.username %></strong>
                         <span class="pull-right">10 days ago</span>
                         <p> - <%= comment.text %></p>
+                        <% if(currentUser && comment.author.id.equals(currentUser._id)) { %>
+                        <a class="btn btn-xs btn-warning" 
+                        href="/campgrounds/<%=campground._id %>/comments/
+                        <%=comment._id%>/edit">Edit</a>
+                        <form id="delete-form" action="/campgrounds/<%=campground._id %>/comments/<%=comment._id%>?_method=DELETE" method="POST">
+                            <input type="submit" class="btn btn-xs btn-danger" value="Delete">
+                        </form>
+                        <% } %>
                     </div>
                 </div>
 
@@ -45,11 +56,35 @@
             </div>
         </div>
     </div>
-
-
-
-
-
 </div>
+
+<script>
+  function initMap() {
+    let lat = <%= campground.lat %>;
+    let lng = <%= campground.lng %>;
+    let center = {lat: lat, lng: lng };
+    let map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 8,
+        center: center,
+        scrollwheel: false
+    });
+    let contentString = `
+      <strong><%= campground.name %><br />
+      <%= campground.location %></strong>
+      <p><%= campground.description %></p>
+    `
+    let infowindow = new google.maps.InfoWindow({
+      content: contentString
+    });
+    let marker = new google.maps.Marker({
+        position: center,
+        map: map
+    });
+    marker.addListener('click', function() {
+      infowindow.open(map, marker);
+    });
+  }
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB995MaBNN_0sXGLOTyGKenGWr3k4grQSk&callback=initMap"></script>
 
 <%- include ("../partials/footer") %>
